@@ -34,3 +34,32 @@ vignettes/*.pdf
 
 # Shiny token, see https://shiny.rstudio.com/articles/shinyapps.html
 rsconnect/
+.Rproj.user
+
+########################################################################
+########################################################################
+###
+###   EXCLUSIONS DURING EMBARGO PERIOD
+###
+###   (These files won't be synched with the GitHub repository, and
+###    therefore, the Open Science Framework. Once the embargo is
+###    lifted, these exclusions can be commented out to publish these
+###    resources.)
+###
+########################################################################
+########################################################################
+
+### Data
+#*.csv
+
+### Reports
+#*.html
+
+### Survey etc
+#*.lss
+#*.pdf
+
+### Plots & images
+#*.png
+#*.svg
+#*.pdf
