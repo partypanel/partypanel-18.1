@@ -1,0 +1,193 @@
+---
+title: "Party Panel 18.1-pre1 Report"
+author: "Greater Good (Gjalt-Jorn Peters)"
+date: "`r format(Sys.time(), '%d %b %Y at %H:%M:%S');`"
+output:
+  html_document:
+    toc: true
+    #toc_float: true
+    toc_depth: 5
+    theme: united
+    css: "B:\\Data\\research\\party panel\\partypanel-shared\\party panel reports.css"
+---
+
+Introduction
+------------
+
+Party Panel is a Dutch panel study where determinants and beliefs underlying health behaviors in the Dutch nightlife are mapped. The fourth wave started on [[[ADD]]] 2018 and explored behavior related to [[[ADD]]].
+
+This document is the report of the first pre-study, where members of expert organisations had the opportunity to respond to a number of open questions about which exact behavior they thought should be targeted in PP18.1. Note that this overview is not exhaustive; we also discussed potential behaviors with Rutgers, a Dutch sexual health organisation planning to release a campaign in 2018, so that the information about determinants from this Party Panel wave could inform that campaign.
+
+```{r echo=FALSE, warning=FALSE, message=FALSE }
+
+### Set basic configuration variables
+if (!exists('ppWave')) ppWave <- '18.1';
+if (!exists('ppReport')) ppReport <- 'pre1';
+if (!exists('basePath')) basePath <- 'B:/Data/research/party panel';
+if (!exists('surveyid')) surveyid <- '883163';
+if (!exists('regularVars')) regularVars <- c('suggestion',
+                                             'justification',
+                                             'recruitment');
+if (!exists('loopVars')) loopVars <- c('extraQuestions_vraag',
+                                       'extraQuestJustificat_vraag');
+if (!exists('loopNr')) loopNr <- 10;
+if (!exists('personalDataQuestions')) personalDataQuestions <- c('personalInfo_name',
+                                                                 'personalInfo_role',
+                                                                 'personalInfo_organisation',
+                                                                 'personalInfo_email');
+
+if (!exists('requiredQuestions')) requiredQuestions <- c('suggestion');
+
+### Dataset filename and version variables
+privateDataFileRegEx <- '.*_\\[PRIVATE-version].*\\.csv';
+privateFileIdentificationString <- "PRIVATE-";
+publicFileIdentificationString <- "PUBLIC-";
+dataPath <- file.path(basePath,
+                      paste0('partypanel-', ppWave),
+                      'preparation',
+                      ppReport,
+                      'data');
+publicDataFilename <- paste0('survey_', surveyid, '_R_data_file_[PUBLIC-version].csv');
+scriptFilename <- paste0('survey_', surveyid, '_R_syntax_file.R');
+
+require('pander', quietly=TRUE);
+require('xtable', quietly=TRUE);
+
+knitr::opts_chunk$set(echo=FALSE);
+knitr::opts_chunk$set(cache=FALSE);
+knitr::opts_chunk$set(comment=NA);
+
+options(width = 160);
+options(xtable.type = "html");
+panderOptions('knitr.auto.asis', FALSE);
+panderOptions('table.split.table', Inf);
+
+### Check for required package
+if (!require('userfriendlyscience')) {
+  stop("You need to have the userfriendlyscience package installed!");
+}
+
+### Make object(s) for Party Panel data
+if (!exists('ppDat')) ppDat <- list();
+if (!(ppWave %in% names(ppDat))) ppDat[[ppWave]] <- list();
+ppDat[[ppWave]][[ppReport]] <- list();
+
+########################################################################
+### Data anonymization
+########################################################################
+    
+### Get a list of all data files in data directory
+privateDataFiles <-
+  list.files(dataPath,
+             pattern=privateDataFileRegEx);
+
+### For this version of the script, there should be exactly one datafile
+if (length(privateDataFiles) > 1) {
+  stop("Multiple datafiles found - this should be impossible and is ",
+       "indicative of compromised data integrity. Inspect the data ",
+       "files carefully!");
+} else if (length(privateDataFiles) == 1) {
+
+  ### Run locally so all variables are automatically destroyed
+  local({
+    
+    ### Read data
+    privateDat <-
+      importLimeSurveyData(datafile = file.path(dataPath, privateDataFiles),
+                           scriptfile = file.path(dataPath, scriptFilename));
+    
+    ### Anonymize: set all values for variables containing personal data to NA
+    privateDat[, personalDataQuestions] <- NA;
+    
+    ### Save anonymized datafile as public
+    write.csv(privateDat,
+              file.path(dataPath,
+                        sub(privateFileIdentificationString,
+                            publicFileIdentificationString,
+                            privateDataFiles,
+                            fixed=TRUE)));
+    
+  });
+  
+}
+
+########################################################################
+### Data loading
+########################################################################
+    
+### Read public data
+ppDat[[ppWave]][[ppReport]]$raw <-
+  importLimeSurveyData(datafile = file.path(dataPath, publicDataFilename),
+                       scriptfile = file.path(dataPath, scriptFilename));
+ppDat[[ppWave]][[ppReport]]$cln <-
+  ppDat[[ppWave]][[ppReport]]$raw;
+
+########################################################################
+### Missing value processing
+########################################################################
+
+### Count missing values
+if (length(requiredQuestions) > 1) {
+  ppDat[[ppWave]][[ppReport]]$cln$missings <-
+    rowSums(is.na(ppDat[[ppWave]][[ppReport]]$cln[, requiredQuestions]), na.rm=TRUE);
+} else {
+  ppDat[[ppWave]][[ppReport]]$cln$missings <-
+    as.numeric(is.na(ppDat[[ppWave]][[ppReport]]$cln[, requiredQuestions]));
+}
+
+### Remove rows with missing values
+ppDat[[ppWave]][[ppReport]]$cln <-
+  ppDat[[ppWave]][[ppReport]]$cln[ppDat[[ppWave]][[ppReport]]$cln$missings == 0, ];
+
+```
+
+The raw dataset contained `r nrow(ppDat[[ppWave]][[ppReport]]$raw);` rows and `r ncol(ppDat[[ppWave]][[ppReport]]$raw);` columns. After removal of empty entries, `r nrow(ppDat[[ppWave]][[ppReport]]$cln);` rows and `r ncol(ppDat[[ppWave]][[ppReport]]$cln);` columns remained.
+
+The full list of variablenames is `r vecTxt(names(ppDat[[ppWave]][[ppReport]]$cln));`.
+
+```{r echo=FALSE, results="asis"}
+
+getLabel <- function(dat, varName) {
+  return(attr(dat, 'variable.labels')[names(dat) == varName]);
+}
+
+showAnswersPerParticipant <- function(dat, varName, secondVarName=NULL) {
+  if (length(na.omit(dat[, varName]))) {
+    if (is.null(secondVarName)) {
+      cat0("### ", varName, "\n",
+           getLabel(dat, varName),  "\n\n",
+           paste0(paste0("* id. ", dat[nchar(dat[, varName]) > 0 &
+                                         !is.na(dat[, varName]), 'id'],
+                         ": ", dat[nchar(dat[, varName]) > 0 &
+                                     !is.na(dat[, varName]), varName]),
+                  collapse="\n"), "\n\n");
+    } else {
+      cat0("### ", varName, "\n",
+           getLabel(dat, varName),  "\n\n",
+           getLabel(dat, secondVarName),  "\n\n",
+           paste0(paste0("* id. ", dat[nchar(dat[, varName]) > 0 &
+                                         !is.na(dat[, varName]), 'id'],
+                         ": ", dat[nchar(dat[, varName]) > 0 &
+                                     !is.na(dat[, varName]), varName],
+                         " **-- JUSTIFICATION --** ", dat[nchar(dat[, varName]) > 0 &
+                                     !is.na(dat[, varName]), secondVarName]),
+                  collapse="\n"), "\n\n");
+    }
+  } else {
+    cat("###", varName, "\nThis variable has no data.\n\n");
+  }
+}
+
+for (currentVar in regularVars) {
+  showAnswersPerParticipant(ppDat[[ppWave]][[ppReport]]$cln, currentVar);
+}
+
+for (currentVar in 1:10) {
+  showAnswersPerParticipant(ppDat[[ppWave]][[ppReport]]$cln,
+                            paste0(loopVars[1], currentVar),
+                            paste0(loopVars[2], currentVar));
+}
+
+```
+
+
