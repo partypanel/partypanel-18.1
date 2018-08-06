@@ -1,33 +1,54 @@
+########################################################################
 ### Set basic configuration variables
+########################################################################
+
 ppWave <- "18.1";
-ppReport <- 'pre1';
-basePath <- 'B:/Data/research/party panel';
-surveyid <- '883163';
-regularVars <- c('suggestion',
-                 'justification',
+ppReport <- 'pre2';
+surveyid <- '180102';
+regularVars <- c('adviseFriendUB',
+                 'adviseFriendDB',
+                 'discloseUB',
+                 'discloseDB',
+                 'expertise',
                  'recruitment');
 loopVars <- c('extraQuestions_vraag',
               'extraQuestJustificat_vraag');
 loopNr <- 10;
-requiredQuestions <- c('suggestion');
+personalDataQuestions <- c('email');
+requiredQuestions <- c('submitdate');
 
-### Automatically generate further configuration variables
-scriptPath <- file.path(basePath,
-                        paste0('partypanel-', ppWave),
-                        'preparation',
-                        ppReport,
-                        'data');
-workingPath <- file.path(basePath,
-                         paste0('partypanel-', ppWave),
-                         'preparation',
-                         ppReport,
-                         'data');
+########################################################################
+### Packages
+########################################################################
 
-### Load packages
-require('rmarkdown');
-require('userfriendlyscience');
+if (!require('userfriendlyscience', quietly = FALSE)) {
+  stop("You need to have the userfriendlyscience package installed!");
+}
+safeRequire('rmarkdown');
+safeRequire('here');
 
-### Knit preliminary report
+########################################################################
+### Set the variables with the paths
+########################################################################
+
+### Set the additional paths
+outputPath <- here('preparation', 'pre2', 'output');
+workingPath <- here('preparation', 'pre2', 'output');
+dataPath <- here('preparation', 'pre2', 'data');
+scriptPath <- here('preparation', 'pre2', 'scripts');
+sharedPath <- normalizePath(file.path(here(), "../partypanel-shared"));
+
+########################################################################
+### Login credentials for uploading report
+########################################################################
+
+reportLoginStringFilePath <-
+  file.path(sharedPath, 'report-upload-login-string.txt')
+
+########################################################################
+### Render report
+########################################################################
+
 render(file.path(scriptPath, paste0(ppWave, "-",
                                     ifelse(nchar(ppReport)>0,
                                                    paste0(ppReport, "-"),
@@ -37,16 +58,19 @@ render(file.path(scriptPath, paste0(ppWave, "-",
                                'index.html'),
        intermediates_dir = workingPath);
 
-### Upload preliminary report
+########################################################################
+### Uploading report to secure site
+########################################################################
+
+uploadPassword <- readLines(reportLoginStringFilePath);
+
 if (require('RCurl')) {
   if (url.exists('partypanel.nl')) {
-    cat0("Uploading report to ftp://partypanel.nl/", ppWave, "/", ppReport, "/index.html");
-    ftpUpload(file.path(workingPath,
-                        'index.html'),
+    ftpUpload(file.path(workingPath, 'index.html'),
               paste0("ftp://partypanel.nl/", ppWave, "/", ppReport, "/index.html"),
-              userpwd="ppreports@partypanel.nl:ppreports_Password@2015");
-    cat("Uploaded report using FTP.\n", sep="");
+              userpwd=uploadPassword)
+    cat("Uploaded report for wave ", ppWave, " to the secured site using FTP.\n", sep="");
   }
 }
 
-cat0("Report available at:\n\n  http://partypanel.nl/reports/", ppWave, "/", ppReport, "\n\n");
+cat0("Report available at:\n\n  https://partypanel.nl/reports/", ppWave, "/", ppReport, "/\n\n");
