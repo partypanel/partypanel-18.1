@@ -7,3 +7,78 @@ kable(multiVarFreq(dat, items=grep('^sib._Questions$', names(dat), value=TRUE)))
 kable(multiResponse(dat, items=grep('^sib._Questions$', names(dat), value=TRUE)));
 
 ```
+
+#### Full comparison of differences between men and women {.tabset}
+
+##### Overview
+
+The second subtab shows the comparisons of male and female participants.
+
+##### All comparisons
+
+```{r analyses-per-sex, results="asis"}
+
+# allDeterminantVars <-
+#   #c(grep('^sib', names(dat), value=TRUE),
+#     grep('^flirtingStrategies_[^o]+', names(dat), value=TRUE)
+#   #);
+# 
+# dat$sexDichotomous <- factor(ifelse(dat$gender %in% c('Male', 'Female'),
+#                                     dat$gender,
+#                                     NA),
+#                              levels=c(2,3),
+#                              labels=c("Male", "Female"));
+# 
+# for (currentVar in allDeterminantVars) {
+#   cat0("\n\n###### ", currentVar, "\n\n");
+#   pander(meanDiff(dat$sexDichotomous, dat[, currentVar]));
+# }
+
+```
+
+### XTC use specifics
+
+```{r xtc-use-specs}
+
+cat("\n\n#### Frequency of XTC consumption\n\n");
+
+ggplot2::ggplot(dat, aes(x=substUseFreq_xtc)) +
+  stat_density(adjust=2, na.rm=TRUE) +
+  theme_minimal() +
+  ggtitle('Number of pills consumed in last half year');
+
+pillsPerYear <-
+  data.frame(1:10,
+             1:10 * 157,
+             tcrossprod(1:10,
+                        mean(dat$substUseFreq_xtc * 2, na.rm=TRUE)),
+             tcrossprod(1:10,
+                        mean(dat$substUseFreq_xtc * 2, na.rm=TRUE)) * 390000,
+             tcrossprod(1:10,
+                        mean(dat$substUseFreq_xtc * 2, na.rm=TRUE)) * 390000 * 5);
+
+names(pillsPerYear) <- c('Pills per occasion',
+                         'Milligrams MDMA per occasion',
+                         'Pills per year per person',
+                         'Total pills per year',
+                         'Total pills per year times five');
+
+cat("\n\n#### XTC consumption in pills per year per person and in total\n\n");
+
+knitr::kable(pillsPerYear);
+
+cat("\n\n#### XTC use frequencies in categories\n\n");
+
+knitr::kable(userfriendlyscience::freq(dat$substUseFreq_cat_xtc)$dat);
+
+cat("\n\n#### XTC use recategorized to 'Grote uitgaansonderzoek' categorieen\n\n");
+
+cat("\n\n##### Full\n\n");
+
+knitr::kable(userfriendlyscience::freq(dat$substUseFreq_cat_GUO_xtc)$dat);
+
+cat("\n\n##### Only for users\n\n");
+
+knitr::kable(userfriendlyscience::freq(dat$substUseFreq_cat_GUO_xtc[isTrue(dat$substUseFreq_xtc>0)])$dat);
+
+```

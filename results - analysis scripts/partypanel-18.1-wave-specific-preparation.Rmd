@@ -2,16 +2,22 @@
 ```{r}
 
 ### Variables using the 'special' frequency measurement question type
-frequencyVars <- c('goingOutFreq', 'leftVenueFreq');
+frequencyVars <- c('goingOutFreq', 'leftVenueFreq', 'substUseFreq');
+
+### Bidimensional scales (and how much to subtract to correct)
+waveSpecificBidimensionalScales <- list(c("AttValue_", -4),
+                                        c("NormMTC_", -4));
 
 ### Variables to rename
-waveSpecificVarnameRegExPairs <- list(c("^(.+)beliefs(.+)$", "\\1Beliefs\\2"));
+waveSpecificVarnameRegExPairs <- list(c("^(.+)beliefs(.+)$", "\\1Beliefs\\2"),
+                                      c("substUseFreqNr_fourfa_nr", "substUseFreqNr_fourf_nr"));
 
 ### Overview of variables and how to visualise and analyse them
 ### (regex, type, associations)
 waveSpecificVariableList <-
   list(negativeExperience = list(regex = "^negativeExperience$",
                                  type = "dichotomous",
+                                 showTotalValid=TRUE,
                                  showFreq = TRUE,
                                  showDiamondPlot=FALSE,
                                  showBarPlot=FALSE,
@@ -22,6 +28,7 @@ waveSpecificVariableList <-
                                  caption = "Whether participants ever had a negative experience"),
        generalBeliefs   = list(regex = "sibGeneralBeliefs",   ### Regex to match one or more variables
                                type = "array",                ### Dichotomous, multi, open, array
+                               showTotalValid=TRUE,
                                showFreq = TRUE,               ### Frequencies
                                showDiamondPlot=TRUE,          ### Diamond plots
                                showBarPlot=TRUE,              ### EasyBar plot
@@ -33,6 +40,7 @@ waveSpecificVariableList <-
                                caption = "General beliefs about flirting, boundaries, etc"),
        leftVenue = list(regex = "^sibLeftDueToBC$",           ### Regex to match one or more variables
                         type = "dichotomous",                 ### Dichotomous, multi, open, array
+                        showTotalValid=TRUE,
                         showFreq = TRUE,                      ### Frequencies
                         showDiamondPlot=FALSE,                ### Diamond plots
                         showBarPlot=TRUE,                     ### EasyBar plot
@@ -43,6 +51,7 @@ waveSpecificVariableList <-
                         caption = "Whether participants ever left a venue because a boundary was crossed"),
        leftVenueFreq = list(regex = "^leftVenueFreq_[^_]+$",           ### Regex to match one or more variables
                             type = "array",                 ### Dichotomous, multi, open, array
+                            showTotalValid=TRUE,
                             showFreq = TRUE,                      ### Frequencies
                             showDiamondPlot=TRUE,                ### Diamond plots
                             showBarPlot=TRUE,                    ### EasyBar plot
@@ -53,6 +62,7 @@ waveSpecificVariableList <-
                             caption = "Which venues participants left because a boundary was crossed"),
        boundariesDislikedPerson = list(regex = "sibPrsBndrsDislike",  ### Regex to match one or more variables
                                        type="array",                  ### Dichotomous, multi, open, array
+                                       showTotalValid=TRUE,
                                        showFreq=TRUE,                 ### Frequencies 
                                        showDiamondPlot=FALSE,         ### Diamond plots
                                        showBarPlot=TRUE,              ### EasyBar plot 
@@ -63,6 +73,7 @@ waveSpecificVariableList <-
                                        caption = "Participants boundaries when they dislike a person"),
        boundariesAttractedPerson = list(regex = "sibPrsBndrsAttracted",
                                         type="array",
+                                        showTotalValid=TRUE,
                                         showFreq=TRUE,
                                         showDiamondPlot=FALSE, 
                                         showBarPlot=TRUE,
@@ -73,6 +84,7 @@ waveSpecificVariableList <-
                                         caption = "Participants boundaries when they are attracted to a person"),
        boundariesFlirtingPerson = list(regex = "sibPerBndrsFlirting",
                                        type="array",
+                                       showTotalValid=TRUE,
                                        showFreq=TRUE,
                                        showDiamondPlot=FALSE,         
                                        showBarPlot=TRUE,
@@ -83,6 +95,7 @@ waveSpecificVariableList <-
                                        caption = "Participants boundaries when they were flirting with a person"),
        ownFlirtingStrategies = list(regex = "^flirtingStrategies_[^o]+",
                                     type="array",
+                                    showTotalValid=TRUE,
                                     showFreq=TRUE,
                                     showBarPlot=TRUE,
                                     showPropPlot=FALSE,

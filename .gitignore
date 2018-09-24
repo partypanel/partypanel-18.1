@@ -53,16 +53,16 @@ rsconnect/
 ########################################################################
 
 ### Data
-*.csv
+#*.csv
 
 ### Reports
 *.html
 
 ### Survey etc
-*.lss
-*.pdf
+#*.lss
+#*.pdf
 
 ### Plots & images
-*.png
-*.svg
-*.pdf
+#*.png
+#*.svg
+#*.pdf

@@ -240,8 +240,8 @@ data[, 55] <- as.character(data[, 55])
 attributes(data)$variable.labels[55] <- "Wat is je geslacht (gender)?"
 data[, 55] <- factor(data[, 55], levels=c("noAns","male","femal","queer"),labels=c("Dit wil ik niet zeggen", "Man", "Vrouw", "Genderqueer"))
 names(data)[55] <- "gender"
-# LimeSurvey Field type: F
-data[, 56] <- as.numeric(data[, 56])
+# LimeSurvey Field type: A
+data[, 56] <- as.character(data[, 56])
 attributes(data)$variable.labels[56] <- "[Andere] Wat is je geslacht (gender)?"
 names(data)[56] <- "gender_other"
 # LimeSurvey Field type: A
